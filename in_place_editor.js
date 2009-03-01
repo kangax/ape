@@ -1,7 +1,9 @@
 (function(){
   
+  APE.namespace('APE.widget');
+  
   // HELPERS
-  function fnFalse() { return false; };
+  function fnEmpty() { };
   function escapeHTML(s) {
     return s.replace(/&/g, '&amp;').replace(/</g, '&lt;')
       .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -21,8 +23,9 @@
   // ALIASES
   var addClass = APE.dom.addClass,
       removeClass = APE.dom.removeClass,
-      addEvent = APE.EventPublisher.add,
-      getTarget = APE.dom.Event.getTarget;
+      addCallback = APE.dom.Event.addCallback,
+      getTarget = APE.dom.Event.getTarget,
+      preventDefault = APE.dom.Event.preventDefault;
       
   /**
    * @class InPlaceEditor
@@ -42,8 +45,8 @@
   }
 
   InPlaceEditor.prototype = {
-    onCancel: fnFalse,
-    onSuccess: fnFalse,
+    onCancel: fnEmpty,
+    onSuccess: fnEmpty,
     /**
      * @private
      * @method _init
@@ -59,6 +62,9 @@
     _buildElements: function() {
       var replacementEl = this.replacementEl = document.createElement('div');
       replacementEl.className = 'ipe-replacement';
+      replacementEl.title = 'Click or press "space" or "enter" to enter editing mode';
+      // make element focusable
+      replacementEl.tabIndex = 0;
       replacementEl.innerHTML = escapeHTML(this.inputEl.value);
       this.inputEl.style.display = 'none';
       
@@ -79,46 +85,63 @@
       insertAfter(this.cancelEl, this.inputEl);
       insertAfter(this.okEl, this.inputEl);
     },
+    
+    _successHandler: function() {
+      var v = this.inputEl.value;
+      this.replacementEl.innerHTML = escapeHTML(v);
+      this.hideControls();
+      this.onSuccess(v);
+      return false;
+    },
+    
+    _cancelHandler: function() {
+      this.hideControls();
+      this.onCancel();
+      return false;
+    },
+    
     /**
      * @private
      * @method _initBehavior
      */
     _initBehavior: function(){
       var _this = this;
-      addEvent(this.replacementEl, 'onmouseover', function(e) {
+      addCallback(this.replacementEl, 'mouseover', function(e) {
         addClass(getTarget(e), 'hover');
       });
-      addEvent(this.replacementEl, 'onmouseout', function(e) {
+      addCallback(this.replacementEl, 'mouseout', function(e) {
         removeClass(getTarget(e), 'hover');
       });
-      addEvent(this.replacementEl, 'onclick', function(e) {
+      addCallback(this.replacementEl, 'click', function() {
         _this.showControls();
       });
-      addEvent(this.cancelEl, 'onclick', function(e) {
-        _this.hideControls();
-        _this.onCancel();
-        return false;
+      addCallback(this.replacementEl, 'keyup', function(e) {
+        if (e.keyCode === 13 || e.keyCode === 32) {
+          _this.showControls();
+        }
       });
-      
-      function successHandler(){
-        _this.replacementEl.innerHTML = escapeHTML(_this.inputEl.value);
-        _this.hideControls();
-        _this.onSuccess(_this.inputEl.value);
-        return false;
-      }
-      addEvent(this.inputEl, 'onkeyup', function(e) {
+      addCallback(this.okEl, 'click', function(e) {
+        preventDefault(e);
+        _this._successHandler();
+      });
+      addCallback(this.cancelEl, 'click', function(e) {
+        preventDefault(e);
+        _this._cancelHandler();
+      });
+      addCallback(this.inputEl, 'keyup', function(e) {
         if (!_this.controlsHidden) {
-          if (e.keyCode === 13 /* ENTER */) {
-            successHandler();
-          }
-          else if (e.keyCode == 27 /* ESC */) {
-            
+          switch(e.keyCode) {
+            case 13: // ENTER
+              _this._successHandler();
+              break;
+            case 27: // ESC
+              _this._cancelHandler();
+              break;
           }
         }
-        
       });
-      addEvent(this.okEl, 'onclick', successHandler);
     },
+    
     /**
      * @method showControls
      */
@@ -132,6 +155,7 @@
       
       this.controlsHidden = false;
     },
+    
     /**
      * @method hideControls
      */
