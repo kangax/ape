@@ -15,8 +15,8 @@
   }
 
   function unescapeHTML(s) {
-    return s.replace('&gt;', '>').replace('&lt;', '<')
-      .replace('&quot;', '"').replace('&', '&amp;');
+    return s.replace(/&lt;/g,'<').replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"').replace(/&amp;/g, '&');
   }
 
   function trim(s) {
@@ -48,7 +48,8 @@
       if (source == null) { 
         source = { };
       }
-      return string.replace(/(?:[^\\]|^)#\{([^\}]*)\}/g, function(m, prop) {
+      // TODO: change regex so that it is possible to escape control sequences - i.e. "#"
+      return string.replace(/#\{([^\}]*)\}/g, function(m, prop) {
         return hop.call(source, prop) ? source[prop] : '';
       });
     }

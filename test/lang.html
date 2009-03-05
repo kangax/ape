@@ -1,0 +1,179 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN"
+   "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title></title>
+    <style type="text/css" media="screen">
+      p { margin: 0.1em; padding: 0.1em 0.5em; float: left; color: #eee; font-family: "Courier New", monospace; }
+      p.PASS { background-color: green; }
+      p.FAIL { background: red; }
+      
+    </style>
+    <script src="../src/lang.js" type="text/javascript"></script>
+  </head>
+  <body>
+    <script type="text/javascript">
+    
+      /* 
+      
+      Tests are heavily borrowed from prototype.js
+      
+      */
+      
+      (function(){
+        
+        function assert(actual) {
+          var status = actual ? 'PASS' : 'FAIL';
+          document.write('<p class="' + status + '">' + status + '</p>');
+        }
+        function assertEqual(expected, actual) {
+          var status = (expected == actual) ? 'PASS' : 'FAIL';
+          document.write('<p class="' + status + '">' + status + '</p>');
+        }
+        
+        function runTests(name, tests) {
+          document.write('<h2>' + name + '</h2>');
+          document.write('<div style="overflow:hidden;">');
+          tests();
+          document.write('</div>')
+        }
+        
+        runTests('APE.lang.trim', function(){
+          
+          var trim = APE.lang.trim;
+
+          assertEqual('hello world', trim('   hello world  '));
+          assertEqual('hello world', trim('hello world'));
+          assertEqual('hello  \n  world', trim('  hello  \n  world  '));
+          assertEqual('', trim(' '));
+          assertEqual('foo', trim('\t\n\f\r foo \n\t\f\r'));
+        });
+
+        runTests('APE.lang.escapeRe', function(){
+          
+          var escapeRe = APE.lang.escapeRe;
+          
+          assertEqual('word', escapeRe('word'));
+          assertEqual('\\/slashes\\/', escapeRe('/slashes/'));
+          assertEqual('\\\\backslashes\\\\', escapeRe('\\backslashes\\'));
+          assertEqual('\\\\border of word', escapeRe('\\border of word'));
+          assertEqual('\\(\\?\\:non-capturing\\)', escapeRe('(?:non-capturing)'));
+          assertEqual('non-capturing', new RegExp(escapeRe('(?:') + '([^)]+)').exec('(?:non-capturing)')[1]);
+          assertEqual('\\(\\?\\=positive-lookahead\\)', escapeRe('(?=positive-lookahead)'));
+          assertEqual('positive-lookahead', new RegExp(escapeRe('(?=') + '([^)]+)').exec('(?=positive-lookahead)')[1]);
+          assertEqual('\\(\\?<\\=positive-lookbehind\\)', escapeRe('(?<=positive-lookbehind)'));
+          assertEqual('positive-lookbehind', new RegExp(escapeRe('(?<=') + '([^)]+)').exec('(?<=positive-lookbehind)')[1]);
+          assertEqual('\\(\\?\\!negative-lookahead\\)', escapeRe('(?!negative-lookahead)'));
+          assertEqual('negative-lookahead', new RegExp(escapeRe('(?!') + '([^)]+)').exec('(?!negative-lookahead)')[1]);
+          assertEqual('\\(\\?<\\!negative-lookbehind\\)', escapeRe('(?<!negative-lookbehind)'));
+          assertEqual('negative-lookbehind', new RegExp(escapeRe('(?<!') + '([^)]+)').exec('(?<!negative-lookbehind)')[1]);
+          assertEqual('\\[\\\\w\\]\\+', escapeRe('[\\w]+'));
+          assertEqual('character class', new RegExp(escapeRe('[') + '([^\\]]+)').exec('[character class]')[1]);
+          assertEqual('<div>', new RegExp(escapeRe('<div>')).exec('<td><div></td>')[0]);
+          assertEqual('false', escapeRe(false));
+          assertEqual('undefined', escapeRe());
+          assertEqual('null', escapeRe(null));
+          assertEqual('42', escapeRe(42));
+          assertEqual('\\\\n\\\\r\\\\t', escapeRe('\\n\\r\\t'));
+          assertEqual('\n\r\t', escapeRe('\n\r\t'));
+          assertEqual('\\{5,2\\}', escapeRe('{5,2}'));
+          assertEqual('\\/\\(\\[\\.\\*\\+\\?\\^\\=\\!\\:\\$\\{\\}\\(\\)\\|\\[\\\\\\]\\\\\\\/\\\\\\\\\\]\\)\\/g',
+            escapeRe('/([.*+?^=!:${}()|[\\]\\/\\\\])/g')
+          );
+        });
+        
+        runTests('APE.lang.escapeHTML', function(){
+          
+          var escapeHTML = APE.lang.escapeHTML;
+
+          assertEqual('foo bar', escapeHTML('foo bar'));
+          assertEqual('foo &lt;span&gt;bar&lt;/span&gt;', escapeHTML('foo <span>bar</span>'));
+          assertEqual('foo ß bar', escapeHTML('foo ß bar'));
+          assertEqual('ウィメンズ2007\nクルーズコレクション', escapeHTML('ウィメンズ2007\nクルーズコレクション'));
+          assertEqual('a&lt;a href=&quot;blah&quot;&gt;blub&lt;/a&gt;b&lt;span&gt;&lt;div&gt;&lt;/div&gt;&lt;/span&gt;cdef&lt;strong&gt;!!!!&lt;/strong&gt;g',
+            escapeHTML('a<a href="blah">blub</a>b<span><div></div></span>cdef<strong>!!!!</strong>g'));
+          assertEqual('1\n2', escapeHTML('1\n2'));
+          assertEqual('&quot;&gt;&quot;&amp;&quot;&lt;&quot;&gt;&quot;&amp;&quot;&lt;&quot;', escapeHTML('">"&"<">"&"<"'));
+        });
+        
+        runTests('APE.lang.unescapeHTML', function(){
+          
+          var unescapeHTML = APE.lang.unescapeHTML;
+          
+          assertEqual('foo bar', unescapeHTML('foo bar'));
+          assertEqual('foo <span>bar</span>', unescapeHTML('foo &lt;span&gt;bar&lt;/span&gt;'));
+          assertEqual('foo ß bar', unescapeHTML('foo ß bar'));
+          assertEqual('a<a href="blah">blub</a>b<span><div></div></span>cdef<strong>!!!!</strong>g',
+            unescapeHTML('a&lt;a href=&quot;blah&quot;&gt;blub&lt;/a&gt;b&lt;span&gt;&lt;'+
+              'div&gt;&lt;/div&gt;&lt;/span&gt;cdef&lt;strong&gt;!!!!&lt;/strong&gt;g'));
+          assertEqual('1\n2', unescapeHTML('1\n2'));
+          assertEqual('&lt;', unescapeHTML('&amp;lt;'));
+        });
+        
+        runTests('APE.lang.stripTags', function(){
+          
+          var stripTags = APE.lang.stripTags;
+          
+          assertEqual('hello world', stripTags('hello world'));
+          assertEqual('hello world', stripTags('hello <span>world</span>'));
+          assertEqual('hello world', stripTags('<a href="#" onclick="moo!">hello</a> world'));
+          assertEqual('hello world', stripTags('h<b><em>e</em></b>l<i>l</i>o w<span class="moo" id="x"><b>o</b></span>rld'));
+          assertEqual('1\n2', stripTags('1\n2'));
+          assertEqual('hello', stripTags('<span title="hello>">hello</span>'));
+        });
+        
+        runTests('APE.lang.camelize', function(){
+          
+          var camelize = APE.lang.camelize;
+          
+          assertEqual('', camelize(''));
+          // assertEqual('', camelize('-')); // <=== should this pass?
+          assertEqual('foo', camelize('foo'));
+          assertEqual('foo_bar', camelize('foo_bar'));
+          assertEqual('FooBar', camelize('-foo-bar'));
+          assertEqual('FooBar', camelize('FooBar'));
+          assertEqual('fooBar', camelize('foo-bar'));
+          assertEqual('borderBottomWidth', camelize('border-bottom-width'));
+          assertEqual('classNameTest',camelize('class-name-test'));
+          assertEqual('classNameTest',camelize('className-test'));
+          assertEqual('classNameTest',camelize('class-nameTest'));
+        });
+        
+        runTests('APE.lang.capitalize', function() {
+          var capitalize = APE.lang.capitalize;
+          
+          assertEqual('',capitalize(''));
+          assertEqual('Ä',capitalize('ä'));
+          assertEqual('A',capitalize('A'));
+          assertEqual('Hello',capitalize('hello'));
+          assertEqual('Hello',capitalize('HELLO'));
+          assertEqual('Hello',capitalize('Hello'));
+          assertEqual('Hello world',capitalize('hello WORLD'));
+        });
+        
+        runTests('APE.lang.interpolate', function() {
+          var interpolate = APE.lang.interpolate;
+          
+          assertEqual('foo_1', interpolate('foo_#{num}', { num: 1 }))
+          assertEqual('My name is Joe and I work in IT', 
+            interpolate('My name is #{name} and I work in #{dept}', { name: 'Joe', dept: 'IT' }));
+          // TODO: needs more tests
+        });
+        
+        runTests('String.prototype.replace', function() {
+          var source = 'foo boo boz';
+
+          assertEqual('Foo Boo BoZ',
+            source.replace(/[^o]+/g, function(match) { return match.toUpperCase() }));
+          assertEqual('f2 b2 b1z',
+            source.replace(/o+/g, function(match) { return match.length; }));
+          assertEqual('f0 b0 b1z',
+            source.replace(/o+/g, function(match) { return match.length % 2; }));
+          assertEqual('Foo boo boz',
+            source.replace(/[^o]+/, function(match) { return match.toUpperCase() }));
+        });
+      })();
+    </script>
+  </body>
+</html>
