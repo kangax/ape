@@ -31,6 +31,16 @@
           var status = (expected == actual) ? 'PASS' : 'FAIL';
           document.write('<p class="' + status + '">' + status + '</p>');
         }
+        function assertArrayEqual(expected, actual) {
+          var i=expected.length, pass = true;
+          while (i--) {
+            if (expected[i] !== actual[i]) {
+              pass = false;
+            }
+          }
+          var status = pass ? 'PASS' : 'FAIL';
+          document.write('<p class="' + status + '">' + status + '</p>');
+        }
         
         function runTests(name, tests) {
           document.write('<h2>' + name + '</h2>');
@@ -39,9 +49,9 @@
           document.write('</div>')
         }
         
-        runTests('APE.lang.trim', function(){
+        runTests('APE.string.trim', function(){
           
-          var trim = APE.lang.trim;
+          var trim = APE.string.trim;
 
           assertEqual('hello world', trim('   hello world  '));
           assertEqual('hello world', trim('hello world'));
@@ -50,42 +60,42 @@
           assertEqual('foo', trim('\t\n\f\r foo \n\t\f\r'));
         });
 
-        runTests('APE.lang.escapeRe', function(){
+        runTests('APE.string.escapeRegExp', function(){
           
-          var escapeRe = APE.lang.escapeRe;
+          var escapeRegExp = APE.string.escapeRegExp;
           
-          assertEqual('word', escapeRe('word'));
-          assertEqual('\\/slashes\\/', escapeRe('/slashes/'));
-          assertEqual('\\\\backslashes\\\\', escapeRe('\\backslashes\\'));
-          assertEqual('\\\\border of word', escapeRe('\\border of word'));
-          assertEqual('\\(\\?\\:non-capturing\\)', escapeRe('(?:non-capturing)'));
-          assertEqual('non-capturing', new RegExp(escapeRe('(?:') + '([^)]+)').exec('(?:non-capturing)')[1]);
-          assertEqual('\\(\\?\\=positive-lookahead\\)', escapeRe('(?=positive-lookahead)'));
-          assertEqual('positive-lookahead', new RegExp(escapeRe('(?=') + '([^)]+)').exec('(?=positive-lookahead)')[1]);
-          assertEqual('\\(\\?<\\=positive-lookbehind\\)', escapeRe('(?<=positive-lookbehind)'));
-          assertEqual('positive-lookbehind', new RegExp(escapeRe('(?<=') + '([^)]+)').exec('(?<=positive-lookbehind)')[1]);
-          assertEqual('\\(\\?\\!negative-lookahead\\)', escapeRe('(?!negative-lookahead)'));
-          assertEqual('negative-lookahead', new RegExp(escapeRe('(?!') + '([^)]+)').exec('(?!negative-lookahead)')[1]);
-          assertEqual('\\(\\?<\\!negative-lookbehind\\)', escapeRe('(?<!negative-lookbehind)'));
-          assertEqual('negative-lookbehind', new RegExp(escapeRe('(?<!') + '([^)]+)').exec('(?<!negative-lookbehind)')[1]);
-          assertEqual('\\[\\\\w\\]\\+', escapeRe('[\\w]+'));
-          assertEqual('character class', new RegExp(escapeRe('[') + '([^\\]]+)').exec('[character class]')[1]);
-          assertEqual('<div>', new RegExp(escapeRe('<div>')).exec('<td><div></td>')[0]);
-          assertEqual('false', escapeRe(false));
-          assertEqual('undefined', escapeRe());
-          assertEqual('null', escapeRe(null));
-          assertEqual('42', escapeRe(42));
-          assertEqual('\\\\n\\\\r\\\\t', escapeRe('\\n\\r\\t'));
-          assertEqual('\n\r\t', escapeRe('\n\r\t'));
-          assertEqual('\\{5,2\\}', escapeRe('{5,2}'));
+          assertEqual('word', escapeRegExp('word'));
+          assertEqual('\\/slashes\\/', escapeRegExp('/slashes/'));
+          assertEqual('\\\\backslashes\\\\', escapeRegExp('\\backslashes\\'));
+          assertEqual('\\\\border of word', escapeRegExp('\\border of word'));
+          assertEqual('\\(\\?\\:non-capturing\\)', escapeRegExp('(?:non-capturing)'));
+          assertEqual('non-capturing', new RegExp(escapeRegExp('(?:') + '([^)]+)').exec('(?:non-capturing)')[1]);
+          assertEqual('\\(\\?\\=positive-lookahead\\)', escapeRegExp('(?=positive-lookahead)'));
+          assertEqual('positive-lookahead', new RegExp(escapeRegExp('(?=') + '([^)]+)').exec('(?=positive-lookahead)')[1]);
+          assertEqual('\\(\\?<\\=positive-lookbehind\\)', escapeRegExp('(?<=positive-lookbehind)'));
+          assertEqual('positive-lookbehind', new RegExp(escapeRegExp('(?<=') + '([^)]+)').exec('(?<=positive-lookbehind)')[1]);
+          assertEqual('\\(\\?\\!negative-lookahead\\)', escapeRegExp('(?!negative-lookahead)'));
+          assertEqual('negative-lookahead', new RegExp(escapeRegExp('(?!') + '([^)]+)').exec('(?!negative-lookahead)')[1]);
+          assertEqual('\\(\\?<\\!negative-lookbehind\\)', escapeRegExp('(?<!negative-lookbehind)'));
+          assertEqual('negative-lookbehind', new RegExp(escapeRegExp('(?<!') + '([^)]+)').exec('(?<!negative-lookbehind)')[1]);
+          assertEqual('\\[\\\\w\\]\\+', escapeRegExp('[\\w]+'));
+          assertEqual('character class', new RegExp(escapeRegExp('[') + '([^\\]]+)').exec('[character class]')[1]);
+          assertEqual('<div>', new RegExp(escapeRegExp('<div>')).exec('<td><div></td>')[0]);
+          assertEqual('false', escapeRegExp(false));
+          assertEqual('undefined', escapeRegExp());
+          assertEqual('null', escapeRegExp(null));
+          assertEqual('42', escapeRegExp(42));
+          assertEqual('\\\\n\\\\r\\\\t', escapeRegExp('\\n\\r\\t'));
+          assertEqual('\n\r\t', escapeRegExp('\n\r\t'));
+          assertEqual('\\{5,2\\}', escapeRegExp('{5,2}'));
           assertEqual('\\/\\(\\[\\.\\*\\+\\?\\^\\=\\!\\:\\$\\{\\}\\(\\)\\|\\[\\\\\\]\\\\\\\/\\\\\\\\\\]\\)\\/g',
-            escapeRe('/([.*+?^=!:${}()|[\\]\\/\\\\])/g')
+            escapeRegExp('/([.*+?^=!:${}()|[\\]\\/\\\\])/g')
           );
         });
         
-        runTests('APE.lang.escapeHTML', function(){
+        runTests('APE.string.escapeHTML', function(){
           
-          var escapeHTML = APE.lang.escapeHTML;
+          var escapeHTML = APE.string.escapeHTML;
 
           assertEqual('foo bar', escapeHTML('foo bar'));
           assertEqual('foo &lt;span&gt;bar&lt;/span&gt;', escapeHTML('foo <span>bar</span>'));
@@ -97,9 +107,9 @@
           assertEqual('&quot;&gt;&quot;&amp;&quot;&lt;&quot;&gt;&quot;&amp;&quot;&lt;&quot;', escapeHTML('">"&"<">"&"<"'));
         });
         
-        runTests('APE.lang.unescapeHTML', function(){
+        runTests('APE.string.unescapeHTML', function(){
           
-          var unescapeHTML = APE.lang.unescapeHTML;
+          var unescapeHTML = APE.string.unescapeHTML;
           
           assertEqual('foo bar', unescapeHTML('foo bar'));
           assertEqual('foo <span>bar</span>', unescapeHTML('foo &lt;span&gt;bar&lt;/span&gt;'));
@@ -111,9 +121,9 @@
           assertEqual('&lt;', unescapeHTML('&amp;lt;'));
         });
         
-        runTests('APE.lang.stripTags', function(){
+        runTests('APE.string.stripTags', function(){
           
-          var stripTags = APE.lang.stripTags;
+          var stripTags = APE.string.stripTags;
           
           assertEqual('hello world', stripTags('hello world'));
           assertEqual('hello world', stripTags('hello <span>world</span>'));
@@ -123,9 +133,9 @@
           assertEqual('hello', stripTags('<span title="hello>">hello</span>'));
         });
         
-        runTests('APE.lang.camelize', function(){
+        runTests('APE.string.camelize', function(){
           
-          var camelize = APE.lang.camelize;
+          var camelize = APE.string.camelize;
           
           assertEqual('', camelize(''));
           // assertEqual('', camelize('-')); // <=== should this pass?
@@ -140,8 +150,8 @@
           assertEqual('classNameTest',camelize('class-nameTest'));
         });
         
-        runTests('APE.lang.capitalize', function() {
-          var capitalize = APE.lang.capitalize;
+        runTests('APE.string.capitalize', function() {
+          var capitalize = APE.string.capitalize;
           
           assertEqual('',capitalize(''));
           assertEqual('Ä',capitalize('ä'));
@@ -152,8 +162,8 @@
           assertEqual('Hello world',capitalize('hello WORLD'));
         });
         
-        runTests('APE.lang.interpolate', function() {
-          var interpolate = APE.lang.interpolate;
+        runTests('APE.string.interpolate', function() {
+          var interpolate = APE.string.interpolate;
           
           assertEqual('foo_1', interpolate('foo_#{num}', { num: 1 }))
           assertEqual('My name is Joe and I work in IT', 
@@ -172,6 +182,15 @@
             source.replace(/o+/g, function(match) { return match.length % 2; }));
           assertEqual('Foo boo boz',
             source.replace(/[^o]+/, function(match) { return match.toUpperCase() }));
+        });
+        
+        runTests('APE.string.extractScripts', function() {
+          var extractScripts = APE.string.extractScripts;
+          assertEqual('alert(1)', extractScripts('<script type="text/javascript">alert(1)<\/script>boo')[0]);
+          assertEqual('(function(){})();', extractScripts('foo\nbar<script>(function(){})();<\/script>baz')[0]);
+          assertEqual('', extractScripts('<script src="http://example.com/somescript.js" type="text/javascript" charset="utf-8"><\/script>blah')[0]);
+          assertArrayEqual(['alert(1);', 'alert(2);'], extractScripts('<script type="text/javascript">alert(1);<\/script>'+
+            '<script type="text/javascript">alert(2);<\/script>'))
         });
       })();
     </script>

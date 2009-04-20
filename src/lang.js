@@ -5,7 +5,7 @@
   var global = this;
   global.APE = global.APE || { };
 
-  function escapeRe(s) {
+  function escapeRegExp(s) {
     return (s + '').replace(/([.*+?^=!:${}()|[\]\/\\])/g, '\\$1');
   }
 
@@ -26,6 +26,23 @@
   function stripTags(s) {
     return s.replace(/<\/?("[^"]*"|'[^']*'|[^>])+>/g, '');
   }
+  
+  /**
+   * @method extractScripts
+   * @param {String} s
+   * @return {String}
+   */
+  var extractScripts = (function(){
+    var re = /<script[^>]*>([\S\s]*?)<\/script>/g;
+    function extractScripts(s) {
+      var result = [], match, i = 0;
+      while (match = re.exec(s)) {
+        result[i++] = match[1];
+      }
+      return result;
+    }
+    return extractScripts;
+  })();
 
   var camelize = (function(){
     function replacer(m, ch) {
@@ -72,7 +89,7 @@
             regexp = new RegExp(regexp.source); // non-global
           }
         } else {
-          regexp = new RegExp(escapeRegex(expression));
+          regexp = new RegExp(escapeRegExpgex(expression));
         }
         var match, 
             string = this, 
@@ -88,16 +105,17 @@
     };
   }
 
-  APE.lang = {
+  APE.string = {
     // string extensions
     escapeHTML: escapeHTML,
     unescapeHTML: unescapeHTML,
-    escapeRe: escapeRe,
+    escapeRegExp: escapeRegExp,
     trim: trim,
     stripTags: stripTags,
     capitalize: capitalize,
     camelize: camelize,
-    interpolate: interpolate
+    interpolate: interpolate,
+    extractScripts: extractScripts
   }
   
 })();
